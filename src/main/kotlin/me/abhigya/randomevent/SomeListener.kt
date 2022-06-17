@@ -2,6 +2,9 @@ package me.abhigya.randomevent
 
 import me.abhigya.randomevent.troll.DiamondOreTroll
 import me.abhigya.randomevent.util.random.WeightedRandomList
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Material
 import org.bukkit.block.Chest
@@ -25,6 +28,9 @@ class SomeListener : Listener {
     val BAMBOOZLED_POTATO = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
             displayName(MiniMessage.miniMessage().deserialize("<rainbow>Bamboozled Potato"))
+            lore(listOf(Component.text("What you think is it that easy?", NamedTextColor.AQUA,TextDecoration.ITALIC),
+            Component.text("gay")
+                ))
         }
     }
 
@@ -34,7 +40,7 @@ class SomeListener : Listener {
             event.isDropItems = false
 
             val troll = DiamondOreTroll()
-            WeightedRandomList(random, { it.chance }, troll.fakeDiamond, troll.tnt, troll.randomDebuff, troll.lavaPool, troll.lagg, troll.nothing, troll.silverfish)
+            WeightedRandomList(random, { it.chance }, troll.fakeDiamond, troll.tnt, troll.randomDebuff, troll.lavaPool, troll.lagg, troll.teleport, troll.silverfish)
                 .randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
         }
     }
