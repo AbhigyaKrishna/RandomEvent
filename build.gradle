@@ -13,17 +13,12 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT'
     compileOnly 'com.github.retrooper.packetevents:spigot:2.0-SNAPSHOT'
-    implementation 'net.kyori:adventure-text-minimessage:4.11.0'
 }
 
 shadowJar {
     minimize()
-
-    relocate 'net.kyori.adventure.text.minimessage', 'me.abhigya.minimessage'
-    relocate 'net.kyori.adventure.text.format.TextDecorationAndState', 'me.abhigya.minimessage.format.TextDecorationAndState'
-    relocate 'net.kyori.adventure.text.format.TextDecoration', 'me.abhigya.minimessage.format.TextDecoration'
 }
 
 compileKotlin {

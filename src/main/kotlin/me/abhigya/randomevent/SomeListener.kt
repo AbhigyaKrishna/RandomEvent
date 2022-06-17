@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
@@ -70,7 +71,12 @@ class SomeListener : Listener {
     }
 
     @EventHandler
-    fun handleTntExplode(event: BlockExplodeEvent) {
+    fun handleBlockExplode(event: BlockExplodeEvent) {
+        event.blockList().clear()
+    }
+
+    @EventHandler
+    fun handleEntityExplode(event: EntityExplodeEvent) {
         event.blockList().clear()
     }
     
