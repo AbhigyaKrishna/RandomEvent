@@ -1,0 +1,78 @@
+package me.abhigya.randomevent
+
+import me.abhigya.randomevent.troll.DiamondOreTroll
+import me.abhigya.randomevent.util.random.WeightedRandomList
+import net.kyori.adventure.text.minimessage.MiniMessage
+import org.bukkit.Material
+import org.bukkit.block.Chest
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.inventory.ItemStack
+import org.bukkit.util.BoundingBox
+import java.util.*
+
+class SomeListener : Listener {
+
+    private val random = Random()
+    private val chests : MutableMap<Player, BoundingBox> = HashMap()
+
+    val BAMBOOZLED_POTATO = ItemStack(Material.POTATO).apply {
+        itemMeta = itemMeta?.apply {
+            displayName(MiniMessage.miniMessage().deserialize("<rainbow>Bamboozled Potato"))
+        }
+    }
+
+    @EventHandler
+    fun handleBlockBreak(event: BlockBreakEvent) {
+        if (event.block.type == Material.DIAMOND_ORE) {
+            event.isDropItems = false
+
+            val troll = DiamondOreTroll()
+            WeightedRandomList(random, { it.chance }, troll.fakeDiamond, troll.tnt, troll.randomDebuff, troll.lavaPool, troll.lagg, troll.nothing, troll.silverfish)
+                .randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+        }
+    }
+
+    @EventHandler
+    fun handleChestOpen(event: PlayerInteractEvent) {
+        if (!event.hasBlock()) return
+        if (event.clickedBlock?.type == Material.CHEST) {
+            if ((event.clickedBlock!!.state as Chest).blockInventory.contains(Material.DIAMOND)) {
+                val loc1 = event.clickedBlock!!.location.add(10.0, 10.0, 10.0)
+                val loc2 = event.clickedBlock!!.location.subtract(10.0, 10.0, 10.0)
+                val box = BoundingBox(loc1.x, loc1.y, loc1.z, loc2.x, loc2.y, loc2.z)
+
+                chests[event.player] = box
+            }
+        }
+    }
+
+    @EventHandler
+    fun handleMovePlayer(event: PlayerMoveEvent) {
+        if (event.player.inventory.contains(Material.DIAMOND)) {
+            val box = chests[event.player]
+            if (box != null && !box.contains(event.to.toVector())) {
+                event.player.inventory.contents.size.downTo(0).forEach {
+                    val item = event.player.inventory.getItem(it)
+                    if (item?.type == Material.DIAMOND) {
+                        event.player.inventory.setItem(it, BAMBOOZLED_POTATO)
+                    }
+                }
+
+                chests.remove(event.player)
+            }
+        }
+    }
+
+    @EventHandler
+    fun handleTntExplode(event: BlockExplodeEvent) {
+        event.blockList().clear()
+    }
+    
+
+}

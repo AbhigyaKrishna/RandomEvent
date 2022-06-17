@@ -1,0 +1,5 @@
+name: 'RandomEvent'
+version: '1.0.0'
+main: 'me.abhigya.randomevent.RandomEvent'
+softdepend:
+  - 'packetevents'
