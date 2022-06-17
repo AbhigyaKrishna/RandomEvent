@@ -271,3 +271,5 @@ fabric.properties
 /.idea/modules/RandomEvent.main.iml
 /.idea/modules/RandomEvent.test.iml
 /.idea/vcs.xml
+/.idea/codeStyles/codeStyleConfig.xml
+/.idea/codeStyles/Project.xml

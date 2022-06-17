@@ -9,6 +9,8 @@ import com.github.retrooper.packetevents.protocol.item.type.ItemTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity
+import net.kyori.adventure.text.minimessage.MiniMessage
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.block.Block
@@ -60,7 +62,7 @@ class DiamondOreTroll {
 
     val tnt = Troll<BlockBreakEvent>("TNT", 10) {
         it.block.location.world?.spawnEntity(it.block.location, EntityType.PRIMED_TNT).let { primedTnt -> primedTnt as TNTPrimed
-            primedTnt.fuseTicks = 40
+            primedTnt.fuseTicks = 20
         }
     }
 
@@ -99,8 +101,14 @@ class DiamondOreTroll {
         }
     }
 
-    val nothing = Troll<BlockBreakEvent>("Nothing", 20) {
-        // do nothing
+    val teleport = Troll<BlockBreakEvent>("Teleport", 20) {
+        if (Bukkit.getOnlinePlayers().size <= 1) return@Troll
+        var randomPlayer = Bukkit.getOnlinePlayers().random()
+        while (randomPlayer == it.player) randomPlayer = Bukkit.getOnlinePlayers().random()
+        it.player.teleport(randomPlayer)
+        it.block.location.world?.playSound(randomPlayer.location, Sound.EVENT_RAID_HORN, 10f, 1f)
+        randomPlayer.sendMessage(MiniMessage.miniMessage().deserialize("<color:#fff700>FIGHT! FIGHT! FIGHT!</color>"))
+        it.player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#fff700>FIGHT! FIGHT! FIGHT!</color>"))
     }
 
     val silverfish = Troll<BlockBreakEvent>("SilverFish", 5) {
