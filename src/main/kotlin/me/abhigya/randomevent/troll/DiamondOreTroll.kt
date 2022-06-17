@@ -66,7 +66,7 @@ class DiamondOreTroll {
         }
     }
 
-    val lavaPool = Troll<BlockBreakEvent>("LavaPool", 10) {
+    val lavaPool = Troll<BlockBreakEvent>("LavaPool", 5) {
         val loc1 = it.block.location.add(3.0, 0.0, 3.0)
         val loc2 = it.block.location.subtract(3.0, 3.0, 3.0)
 
@@ -87,11 +87,11 @@ class DiamondOreTroll {
         }
     }
 
-    val lagg = Troll<BlockBreakEvent>("Lagg", 25) {
+    val lagg = Troll<BlockBreakEvent>("Lagg", 20) {
         it.isCancelled = true
     }
 
-    val randomDebuff = Troll<BlockBreakEvent>("RandomDebuff", 10) {
+    val randomDebuff = Troll<BlockBreakEvent>("RandomDebuff", 25) {
         val random = ThreadLocalRandom.current()
         var chance = 1
 
@@ -101,7 +101,7 @@ class DiamondOreTroll {
         }
     }
 
-    val teleport = Troll<BlockBreakEvent>("Teleport", 20) {
+    val teleport = Troll<BlockBreakEvent>("Teleport", 15) {
         if (Bukkit.getOnlinePlayers().size <= 1) return@Troll
         var randomPlayer = Bukkit.getOnlinePlayers().random()
         while (randomPlayer == it.player) randomPlayer = Bukkit.getOnlinePlayers().random()
