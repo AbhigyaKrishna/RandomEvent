@@ -263,3 +263,11 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Gradle,Kotlin,Intellij,Intellij+all,Intellij+iml
+/.idea/.gitignore
+/.idea/compiler.xml
+/.idea/discord.xml
+/.idea/jarRepositories.xml
+/.idea/misc.xml
+/.idea/modules/RandomEvent.main.iml
+/.idea/modules/RandomEvent.test.iml
+/.idea/vcs.xml
