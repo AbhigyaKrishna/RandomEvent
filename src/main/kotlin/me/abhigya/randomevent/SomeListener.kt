@@ -8,6 +8,7 @@ import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Material
 import org.bukkit.block.Chest
+import org.bukkit.entity.Cow
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -49,8 +50,10 @@ class SomeListener : Listener {
 
     @EventHandler
     fun handlePlayerInteractWithEntity(event: PlayerInteractAtEntityEvent) {
-        event.isCancelled = true
-        cowTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+        if (event.rightClicked is Cow) {
+            event.isCancelled = true
+            cowTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+        }
     }
 
     @EventHandler
