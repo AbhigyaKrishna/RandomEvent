@@ -1,6 +1,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.7.0'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'xyz.jpenilla.special-gradle' version '1.0.0-SNAPSHOT'
 }
 
 group = 'me.abhigya'
@@ -10,11 +11,17 @@ repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
     maven { url 'https://repo.papermc.io/repository/maven-public/'}
+    maven { url 'https://nexus.funkemunky.cc/content/repositories/releases/'}
 }
 
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT'
     compileOnly 'com.github.retrooper.packetevents:spigot:2.0-SNAPSHOT'
+}
+
+specialGradle {
+    minecraftVersion.set('1.18.2')
+    specialSourceVersion.set('1.10.0')
 }
 
 shadowJar {
@@ -54,6 +61,7 @@ sourceSets {
 
 build {
     dependsOn shadowJar
+    dependsOn productionMappedJar
 }
 
 shadowJar.shouldRunAfter build
