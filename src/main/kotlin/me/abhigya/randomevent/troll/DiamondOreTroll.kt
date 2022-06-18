@@ -26,7 +26,7 @@ import kotlin.collections.ArrayList
 
 class DiamondOreTroll {
 
-    private var id = 488272
+    private var ID = 488272
     private val potionDeBuffs = arrayListOf<PotionEffectType>(
         PotionEffectType.BLINDNESS,
         PotionEffectType.CONFUSION,
@@ -40,7 +40,7 @@ class DiamondOreTroll {
 
 
     val fakeDiamond  = Troll<BlockBreakEvent>("Fake Diamond", 20) {
-        id++
+        val id = ID++
         val spawnPacket = WrapperPlayServerSpawnEntity(
             id,
             Optional.empty(),
@@ -107,6 +107,8 @@ class DiamondOreTroll {
         while (randomPlayer == it.player) randomPlayer = Bukkit.getOnlinePlayers().random()
         it.player.teleport(randomPlayer)
         it.block.location.world?.playSound(randomPlayer.location, Sound.EVENT_RAID_HORN, 10f, 1f)
+        randomPlayer.damage(5.0, it.player)
+        it.player.damage(5.0, randomPlayer)
         randomPlayer.sendMessage(MiniMessage.miniMessage().deserialize("<color:#fff700>FIGHT! FIGHT! FIGHT!</color>"))
         it.player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#fff700>FIGHT! FIGHT! FIGHT!</color>"))
     }

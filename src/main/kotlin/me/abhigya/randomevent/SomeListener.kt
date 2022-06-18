@@ -13,7 +13,9 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityExplodeEvent
+import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
@@ -24,6 +26,7 @@ class SomeListener : Listener {
 
     private val random = Random()
     private val chests : MutableMap<Player, BoundingBox> = HashMap()
+    private val deadPlayer : MutableList<Player> = ArrayList()
 
     private val bamboozledPotato = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
@@ -85,6 +88,25 @@ class SomeListener : Listener {
     fun handleEntityExplode(event: EntityExplodeEvent) {
         event.blockList().clear()
     }
-    
 
+    @EventHandler
+    fun handlePlayerDamage(event: EntityDamageByEntityEvent) {
+        if (event.entity !is Player) return
+        if (event.damager !is Player) return
+        val remainingHealth = (event.entity as Player).health - event.damage
+        if (remainingHealth <= 0) {
+            deadPlayer.add(event.entity as Player)
+        }
+    }
+
+    @EventHandler
+    fun  handlePlayerDeath(event: PlayerDeathEvent) {
+        if (deadPlayer.contains(event.entity)) {
+            event.keepInventory = false
+            deadPlayer.remove(event.entity)
+        } else {
+            event.keepInventory = true
+            event.drops.clear()
+        }
+    }
 }
