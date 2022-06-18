@@ -1,7 +1,7 @@
 package me.abhigya.randomevent
 
+import me.abhigya.randomevent.troll.CowTroll
 import me.abhigya.randomevent.troll.DiamondOreTroll
-import me.abhigya.randomevent.util.random.WeightedRandomList
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -16,17 +16,18 @@ import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.player.PlayerInteractAtEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.BoundingBox
-import java.util.*
 
 class SomeListener : Listener {
 
     private val chests : MutableMap<Player, BoundingBox> = HashMap()
     private val deadPlayer : MutableList<Player> = ArrayList()
     private val diamondTroll = DiamondOreTroll()
+    private val cowTroll = CowTroll()
 
     private val bamboozledPotato = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
@@ -44,6 +45,12 @@ class SomeListener : Listener {
 
             diamondTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
         }
+    }
+
+    @EventHandler
+    fun handlePlayerInteractWithEntity(event: PlayerInteractAtEntityEvent) {
+        event.isCancelled = true
+        cowTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
     }
 
     @EventHandler
