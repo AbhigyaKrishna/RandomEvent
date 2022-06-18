@@ -27,7 +27,7 @@ import kotlin.collections.ArrayList
 class DiamondOreTroll {
 
     private var ID = 488272
-    private val POTION_DEBUF = arrayListOf<PotionEffectType>(
+    private val potionDeBuffs = arrayListOf<PotionEffectType>(
         PotionEffectType.BLINDNESS,
         PotionEffectType.CONFUSION,
         PotionEffectType.HUNGER,
@@ -40,7 +40,7 @@ class DiamondOreTroll {
 
 
     val fakeDiamond  = Troll<BlockBreakEvent>("Fake Diamond", 20) {
-        val id = ID++;
+        val id = ID++
         val spawnPacket = WrapperPlayServerSpawnEntity(
             id,
             Optional.empty(),
@@ -87,16 +87,16 @@ class DiamondOreTroll {
         }
     }
 
-    val lagg = Troll<BlockBreakEvent>("Lagg", 20) {
+    val lag = Troll<BlockBreakEvent>("Lag", 20) {
         it.isCancelled = true
     }
 
-    val randomDebuff = Troll<BlockBreakEvent>("RandomDebuff", 25) {
+    val randomDeBuff = Troll<BlockBreakEvent>("RandomDeBuff", 25) {
         val random = ThreadLocalRandom.current()
         var chance = 1
 
         while (chance < 10) {
-            it.player.addPotionEffect(PotionEffect(POTION_DEBUF[random.nextInt(POTION_DEBUF.size)], random.nextInt(30, 60) * 20, random.nextInt(1, 6)))
+            it.player.addPotionEffect(PotionEffect(potionDeBuffs[random.nextInt(potionDeBuffs.size)], random.nextInt(30, 60) * 20, random.nextInt(1, 6)))
             chance = random.nextInt(100)
         }
     }
@@ -107,6 +107,8 @@ class DiamondOreTroll {
         while (randomPlayer == it.player) randomPlayer = Bukkit.getOnlinePlayers().random()
         it.player.teleport(randomPlayer)
         it.block.location.world?.playSound(randomPlayer.location, Sound.EVENT_RAID_HORN, 10f, 1f)
+        randomPlayer.damage(5.0, it.player)
+        it.player.damage(5.0, randomPlayer)
         randomPlayer.sendMessage(MiniMessage.miniMessage().deserialize("<color:#fff700>FIGHT! FIGHT! FIGHT!</color>"))
         it.player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#fff700>FIGHT! FIGHT! FIGHT!</color>"))
     }

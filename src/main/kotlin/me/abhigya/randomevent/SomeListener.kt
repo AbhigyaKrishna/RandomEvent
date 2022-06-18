@@ -13,7 +13,9 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityExplodeEvent
+import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
@@ -24,8 +26,9 @@ class SomeListener : Listener {
 
     private val random = Random()
     private val chests : MutableMap<Player, BoundingBox> = HashMap()
+    private val deadPlayer : MutableList<Player> = ArrayList()
 
-    val BAMBOOZLED_POTATO = ItemStack(Material.POTATO).apply {
+    private val bamboozledPotato = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
             displayName(MiniMessage.miniMessage().deserialize("<rainbow>Bamboozled Potato"))
             lore(listOf(Component.text("What you think is it that easy?", NamedTextColor.AQUA,TextDecoration.ITALIC),
@@ -40,7 +43,7 @@ class SomeListener : Listener {
             event.isDropItems = false
 
             val troll = DiamondOreTroll()
-            WeightedRandomList(random, { it.chance }, troll.fakeDiamond, troll.tnt, troll.randomDebuff, troll.lavaPool, troll.lagg, troll.teleport, troll.silverfish)
+            WeightedRandomList(random, { it.chance }, troll.fakeDiamond, troll.tnt, troll.randomDeBuff, troll.lavaPool, troll.lag, troll.teleport, troll.silverfish)
                 .randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
         }
     }
@@ -67,7 +70,7 @@ class SomeListener : Listener {
                 event.player.inventory.contents.size.downTo(0).forEach {
                     val item = event.player.inventory.getItem(it)
                     if (item?.type == Material.DIAMOND) {
-                        event.player.inventory.setItem(it, BAMBOOZLED_POTATO)
+                        event.player.inventory.setItem(it, bamboozledPotato)
                     }
                 }
 
@@ -85,6 +88,25 @@ class SomeListener : Listener {
     fun handleEntityExplode(event: EntityExplodeEvent) {
         event.blockList().clear()
     }
-    
 
+    @EventHandler
+    fun handlePlayerDamage(event: EntityDamageByEntityEvent) {
+        if (event.entity !is Player) return
+        if (event.damager !is Player) return
+        val remainingHealth = (event.entity as Player).health - event.damage
+        if (remainingHealth <= 0) {
+            deadPlayer.add(event.entity as Player)
+        }
+    }
+
+    @EventHandler
+    fun  handlePlayerDeath(event: PlayerDeathEvent) {
+        if (deadPlayer.contains(event.entity)) {
+            event.keepInventory = false
+            deadPlayer.remove(event.entity)
+        } else {
+            event.keepInventory = true
+            event.drops.clear()
+        }
+    }
 }
