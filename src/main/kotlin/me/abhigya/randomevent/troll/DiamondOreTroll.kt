@@ -24,7 +24,7 @@ import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.collections.ArrayList
 
-class DiamondOreTroll {
+class DiamondOreTroll : RandomTrollList<BlockBreakEvent>() {
 
     private var ID = 488272
     private val potionDeBuffs = arrayListOf<PotionEffectType>(
@@ -123,6 +123,10 @@ class DiamondOreTroll {
                 it.block.location.world?.playSound(it.block.location, Sound.ENTITY_WITCH_CELEBRATE, 10f, 1f)
             }
         }
+    }
+
+    override fun list(): List<Troll<BlockBreakEvent>> {
+        return listOf(fakeDiamond, tnt, lavaPool, lag, randomDeBuff, teleport, silverfish)
     }
 
 }

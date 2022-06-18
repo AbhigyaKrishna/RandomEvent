@@ -24,9 +24,9 @@ import java.util.*
 
 class SomeListener : Listener {
 
-    private val random = Random()
     private val chests : MutableMap<Player, BoundingBox> = HashMap()
     private val deadPlayer : MutableList<Player> = ArrayList()
+    private val diamondTroll = DiamondOreTroll()
 
     private val bamboozledPotato = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
@@ -42,9 +42,7 @@ class SomeListener : Listener {
         if (event.block.type == Material.DIAMOND_ORE) {
             event.isDropItems = false
 
-            val troll = DiamondOreTroll()
-            WeightedRandomList(random, { it.chance }, troll.fakeDiamond, troll.tnt, troll.randomDeBuff, troll.lavaPool, troll.lag, troll.teleport, troll.silverfish)
-                .randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+            diamondTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
         }
     }
 
