@@ -25,7 +25,7 @@ class SomeListener : Listener {
     private val random = Random()
     private val chests : MutableMap<Player, BoundingBox> = HashMap()
 
-    val BAMBOOZLED_POTATO = ItemStack(Material.POTATO).apply {
+    private val bamboozledPotato = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
             displayName(MiniMessage.miniMessage().deserialize("<rainbow>Bamboozled Potato"))
             lore(listOf(Component.text("What you think is it that easy?", NamedTextColor.AQUA,TextDecoration.ITALIC),
@@ -40,7 +40,7 @@ class SomeListener : Listener {
             event.isDropItems = false
 
             val troll = DiamondOreTroll()
-            WeightedRandomList(random, { it.chance }, troll.fakeDiamond, troll.tnt, troll.randomDebuff, troll.lavaPool, troll.lagg, troll.teleport, troll.silverfish)
+            WeightedRandomList(random, { it.chance }, troll.fakeDiamond, troll.tnt, troll.randomDeBuff, troll.lavaPool, troll.lag, troll.teleport, troll.silverfish)
                 .randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
         }
     }
@@ -67,7 +67,7 @@ class SomeListener : Listener {
                 event.player.inventory.contents.size.downTo(0).forEach {
                     val item = event.player.inventory.getItem(it)
                     if (item?.type == Material.DIAMOND) {
-                        event.player.inventory.setItem(it, BAMBOOZLED_POTATO)
+                        event.player.inventory.setItem(it, bamboozledPotato)
                     }
                 }
 
