@@ -13,6 +13,6 @@ class AngryChicken(loc: Location) : EntityChicken(net.minecraft.world.entity.Ent
     }
     init {
         this.g(loc.x, loc.y, loc.z)
-    }.
+    }
 }
 
