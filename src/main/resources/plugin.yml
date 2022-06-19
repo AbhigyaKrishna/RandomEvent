@@ -3,3 +3,8 @@ version: '1.0.0'
 main: 'me.abhigya.randomevent.RandomEvent'
 softdepend:
   - 'packetevents'
+commands:
+  chickenthechad:
+    name: 'ChickenTheChad'
+    aliases:
+      - 'chicken'

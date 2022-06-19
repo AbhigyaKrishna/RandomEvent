@@ -11,15 +11,14 @@ class RandomEvent : JavaPlugin() {
 
     override fun onEnable() {
         server.pluginManager.registerEvents(SomeListener(), this)
+        getCommand("chickenthechad")?.setExecutor(this)
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>?): Boolean {
         if (sender !is Player) return true
-        if (command.name == "chickenTheChad") {
-            val chickenTheChad = ChickenTheChad(sender.location)
-            val world = ((sender.world as CraftWorld).handle)
-            world.addFreshEntity(chickenTheChad)
-        }
+        val chickenTheChad = ChickenTheChad(sender.location)
+        val world = ((sender.world as CraftWorld).handle)
+        world.addFreshEntity(chickenTheChad)
         return true
     }
 }
