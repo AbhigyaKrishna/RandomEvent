@@ -52,8 +52,11 @@ sourceSets {
     }
 }
 
-build {
+assemble {
     dependsOn reobfJar
+}
+
+build {
     dependsOn shadowJar
 }
 
