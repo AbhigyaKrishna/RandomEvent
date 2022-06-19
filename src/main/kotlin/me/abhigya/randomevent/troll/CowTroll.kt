@@ -1,5 +1,6 @@
 package me.abhigya.randomevent.troll
 
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.entity.EntityType
 import org.bukkit.event.player.PlayerInteractAtEntityEvent
 
@@ -9,6 +10,7 @@ class CowTroll : RandomTrollList<PlayerInteractAtEntityEvent>() {
         val location = it.rightClicked.location
         it.rightClicked.remove()
         val chicken = it.rightClicked.world.spawnEntity(location, EntityType.CHICKEN)
+        chicken.customName(MiniMessage.miniMessage().deserialize("<rainbow>Chicken The Chad"))
     }
 
     private val DoNothing = Troll<PlayerInteractAtEntityEvent> ("Do Nothing", 50) {

@@ -7,6 +7,10 @@ abstract class RandomTrollList<T> : WeightedRandomList<Troll<T>>(ThreadLocalRand
 
     init {
         for (troll in list()) {
+            if (troll == null) {
+                println("troll is null")
+                continue
+            }
             add(troll)
         }
     }

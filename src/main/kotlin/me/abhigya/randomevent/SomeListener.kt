@@ -34,7 +34,7 @@ class SomeListener : Listener {
         itemMeta = itemMeta?.apply {
             displayName(MiniMessage.miniMessage().deserialize("<rainbow>Bamboozled Potato"))
             lore(listOf(Component.text("What you think is it that easy?", NamedTextColor.AQUA,TextDecoration.ITALIC),
-            Component.text("gay")
+            Component.text("It's still out there somewhere, keep searching.")
                 ))
         }
     }
