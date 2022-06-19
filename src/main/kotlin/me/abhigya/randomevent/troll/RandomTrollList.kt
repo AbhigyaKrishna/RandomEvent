@@ -5,14 +5,12 @@ import java.util.concurrent.ThreadLocalRandom
 
 abstract class RandomTrollList<T> : WeightedRandomList<Troll<T>>(ThreadLocalRandom.current()) {
 
-    init {
+    fun finalize() : RandomTrollList<T> {
+        list.clear()
         for (troll in list()) {
-            if (troll == null) {
-                println("troll is null")
-                continue
-            }
             add(troll)
         }
+        return this
     }
 
     abstract fun list(): List<Troll<T>>

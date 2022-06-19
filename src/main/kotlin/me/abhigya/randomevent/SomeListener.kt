@@ -44,7 +44,7 @@ class SomeListener : Listener {
         if (event.block.type == Material.DIAMOND_ORE) {
             event.isDropItems = false
 
-            diamondTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+            diamondTroll.finalize().randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
         }
     }
 
@@ -52,7 +52,7 @@ class SomeListener : Listener {
     fun handlePlayerInteractWithEntity(event: PlayerInteractAtEntityEvent) {
         if (event.rightClicked is Cow) {
             event.isCancelled = true
-            cowTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+            cowTroll.finalize().randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
         }
     }
 

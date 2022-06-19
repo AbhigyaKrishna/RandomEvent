@@ -4,7 +4,7 @@ import java.util.*
 
 open class WeightedRandomList<T : WeightedElement>(private val random: Random, vararg elements: T) {
 
-    private val list = elements.toMutableList()
+    val list = elements.toMutableList()
     private var total = list.sumOf { it.chance() }
 
     fun randomValue() : T {
