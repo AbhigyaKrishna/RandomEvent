@@ -10,11 +10,19 @@ version = '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.md-5.net/content/groups/public/' }
 }
 
 dependencies {
     paperweightDevelopmentBundle 'io.papermc.paper:dev-bundle:1.18.2-R0.1-SNAPSHOT'
     compileOnly 'com.github.retrooper.packetevents:spigot:2.0-SNAPSHOT'
+    compileOnly 'LibsDisguises:LibsDisguises:10.0.21'
+}
+
+configurations.implementation {
+    exclude group: 'org.spigotmc', module: 'spigot-api'
+    exclude group: 'org.spigotmc', module: 'spigot'
+    exclude group: 'net.md-5', module: 'bungeecord-chat'
 }
 
 shadowJar {

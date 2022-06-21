@@ -27,8 +27,8 @@ class SomeListener : Listener {
 
     private val chests : MutableMap<Player, BoundingBox> = HashMap()
     private val deadPlayer : MutableList<Player> = ArrayList()
-    private val diamondTroll = DiamondOreTroll()
-    private val cowTroll = CowTroll()
+    private val diamondTroll = DiamondOreTroll().finalize()
+    private val cowTroll = CowTroll().finalize()
 
     private val bamboozledPotato = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
@@ -44,7 +44,7 @@ class SomeListener : Listener {
         if (event.block.type == Material.DIAMOND_ORE) {
             event.isDropItems = false
 
-            diamondTroll.finalize().randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+            diamondTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
         }
     }
 
@@ -52,7 +52,7 @@ class SomeListener : Listener {
     fun handlePlayerInteractWithEntity(event: PlayerInteractAtEntityEvent) {
         if (event.rightClicked is Cow) {
             event.isCancelled = true
-            cowTroll.finalize().randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+            cowTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
         }
     }
 
