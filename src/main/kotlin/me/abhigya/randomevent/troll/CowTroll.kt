@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack
 
 class CowTroll : RandomTrollList<PlayerInteractAtEntityEvent>() {
 
-    private val turnCowToChicken = Troll<PlayerInteractAtEntityEvent> ("Turn Cow To Chicken", 100) {
+    private val turnCowToChicken = Troll<PlayerInteractAtEntityEvent> ("Turn Cow To Chicken", 50) {
         val location = it.rightClicked.location
         it.rightClicked.remove()
         val zombie = it.rightClicked.world.spawnEntity(location, EntityType.ZOMBIE) as Zombie

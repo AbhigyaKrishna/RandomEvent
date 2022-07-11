@@ -25,17 +25,20 @@ import org.bukkit.util.BoundingBox
 
 class SomeListener : Listener {
 
-    private val chests : MutableMap<Player, BoundingBox> = HashMap()
-    private val deadPlayer : MutableList<Player> = ArrayList()
+    private val chests: MutableMap<Player, BoundingBox> = HashMap()
+    private val deadPlayer: MutableList<Player> = ArrayList()
     private val diamondTroll = DiamondOreTroll().finalize()
     private val cowTroll = CowTroll().finalize()
 
     private val bamboozledPotato = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
             displayName(MiniMessage.miniMessage().deserialize("<rainbow>Bamboozled Potato"))
-            lore(listOf(Component.text("What you think is it that easy?", NamedTextColor.AQUA,TextDecoration.ITALIC),
-            Component.text("It's still out there somewhere, keep searching.")
-                ))
+            lore(
+                listOf(
+                    Component.text("What did you think, is it that easy?", NamedTextColor.AQUA, TextDecoration.ITALIC),
+                    Component.text("It's still out there somewhere, keep searching.")
+                )
+            )
         }
     }
 
@@ -108,7 +111,7 @@ class SomeListener : Listener {
     }
 
     @EventHandler
-    fun  handlePlayerDeath(event: PlayerDeathEvent) {
+    fun handlePlayerDeath(event: PlayerDeathEvent) {
         if (deadPlayer.contains(event.entity)) {
             event.keepInventory = false
             deadPlayer.remove(event.entity)

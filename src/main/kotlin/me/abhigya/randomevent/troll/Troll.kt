@@ -1,9 +1,9 @@
 package me.abhigya.randomevent.troll
 
 import me.abhigya.randomevent.util.random.WeightedElement
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 
-@Suppress("DEPRECATION")
 class Troll<T>(val name : String, private val chance : Int, private val fn : (T) -> Unit) : WeightedElement {
 
     fun execute(t : T) {
@@ -11,7 +11,7 @@ class Troll<T>(val name : String, private val chance : Int, private val fn : (T)
     }
 
     fun debugExecute(t : T, str : (Troll<T>) -> String) {
-        Bukkit.broadcastMessage(str(this))
+        Bukkit.broadcast(Component.text(str(this)))
         fn(t)
     }
 
