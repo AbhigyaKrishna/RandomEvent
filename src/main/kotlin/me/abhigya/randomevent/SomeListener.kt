@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Chest
 import org.bukkit.entity.Cow
@@ -17,18 +18,27 @@ import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerInteractAtEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
+import org.bukkit.plugin.Plugin
 import org.bukkit.util.BoundingBox
 
-class SomeListener : Listener {
+class SomeListener(plugin: RandomEvent) : Listener {
 
     private val chests: MutableMap<Player, BoundingBox> = HashMap()
     private val deadPlayer: MutableList<Player> = ArrayList()
     private val diamondTroll = DiamondOreTroll().finalize()
     private val cowTroll = CowTroll().finalize()
+    private var setArenaLocation: Location? = null
+    private var PLUGIN: Plugin? = null
+
+    init {
+        this.PLUGIN = plugin
+    }
 
     private val bamboozledPotato = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
@@ -118,6 +128,19 @@ class SomeListener : Listener {
         } else {
             event.keepInventory = true
             event.drops.clear()
+        }
+    }
+
+    @EventHandler
+    fun handleInventorySwap(event: InventoryClickEvent) {
+        if (setArenaLocation == null) setArenaLocation = event.whoClicked.location
+        if (event.clickedInventory?.type != InventoryType.FURNACE) return
+        if (event.currentItem?.type != Material.DIAMOND) return
+//        Bukkit.getScheduler().runTaskLater(PLUGIN, runnable(), 140)
+        if (!event.whoClicked.inventory.contains(Material.DIAMOND)) return
+        for (player in event.whoClicked.world.players) {
+//            if (player != event.whoClicked) Thread.sleep(2000)
+            player.teleport(setArenaLocation!!)
         }
     }
 }
