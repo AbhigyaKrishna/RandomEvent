@@ -1,6 +1,17 @@
 name: 'RandomEvent'
 version: '1.0.0'
 main: 'me.abhigya.randomevent.RandomEvent'
+api-version: 1.18
 softdepend:
   - 'packetevents'
   - 'libdisguise'
+commands:
+  'setarena':
+    permission: 'randomevent.setarena'
+  'setsubmit':
+    permission: 'randomevent.setsubmit'
+permissions:
+  'randomevent.setarena':
+    default: 'op'
+  'randomevent.setsubmit':
+    default: 'op'

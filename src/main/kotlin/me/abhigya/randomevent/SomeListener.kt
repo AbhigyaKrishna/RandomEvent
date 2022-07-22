@@ -2,16 +2,20 @@ package me.abhigya.randomevent
 
 import me.abhigya.randomevent.troll.CowTroll
 import me.abhigya.randomevent.troll.DiamondOreTroll
+import me.abhigya.randomevent.util.Util
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
-import org.bukkit.Location
+import net.kyori.adventure.title.Title
+import net.kyori.adventure.util.Ticks
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Chest
 import org.bukkit.entity.Cow
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
@@ -24,21 +28,14 @@ import org.bukkit.event.player.PlayerInteractAtEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.plugin.Plugin
 import org.bukkit.util.BoundingBox
 
-class SomeListener(plugin: RandomEvent) : Listener {
+class SomeListener(private val plugin: RandomEvent) : Listener {
 
     private val chests: MutableMap<Player, BoundingBox> = HashMap()
     private val deadPlayer: MutableList<Player> = ArrayList()
     private val diamondTroll = DiamondOreTroll().finalize()
     private val cowTroll = CowTroll().finalize()
-    private var setArenaLocation: Location? = null
-    private var PLUGIN: Plugin? = null
-
-    init {
-        this.PLUGIN = plugin
-    }
 
     private val bamboozledPotato = ItemStack(Material.POTATO).apply {
         itemMeta = itemMeta?.apply {
@@ -91,6 +88,7 @@ class SomeListener(plugin: RandomEvent) : Listener {
                 event.player.inventory.contents.size.downTo(0).forEach {
                     val item = event.player.inventory.getItem(it)
                     if (item?.type == Material.DIAMOND) {
+                        if (Util.isCustomDiamond(item)) return@forEach
                         event.player.inventory.setItem(it, bamboozledPotato)
                     }
                 }
@@ -131,16 +129,18 @@ class SomeListener(plugin: RandomEvent) : Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun handleInventorySwap(event: InventoryClickEvent) {
-        if (setArenaLocation == null) setArenaLocation = event.whoClicked.location
-        if (event.clickedInventory?.type != InventoryType.FURNACE) return
-        if (event.currentItem?.type != Material.DIAMOND) return
-//        Bukkit.getScheduler().runTaskLater(PLUGIN, runnable(), 140)
-        if (!event.whoClicked.inventory.contains(Material.DIAMOND)) return
-        for (player in event.whoClicked.world.players) {
-//            if (player != event.whoClicked) Thread.sleep(2000)
-            player.teleport(setArenaLocation!!)
+        if (event.cursor == null) return
+        if (event.view.topInventory.type != InventoryType.FURNACE) return
+        if (!Util.isCustomDiamond(event.cursor!!)) return
+        if (event.clickedInventory?.type == InventoryType.PLAYER) return
+        for (player in Bukkit.getOnlinePlayers()) {
+            player.showTitle(Title.title(Component.text("${event.whoClicked.name} got the diamond!", NamedTextColor.AQUA),
+                Component.text("Starting PvP in 10 seconds.", NamedTextColor.RED),
+                Title.Times.times(Ticks.duration(10L), Ticks.duration(50L), Ticks.duration(10L))))
         }
+        plugin.chaseSequence.scheduleStart(event.whoClicked as Player)
+        HandlerList.unregisterAll(this)
     }
 }
