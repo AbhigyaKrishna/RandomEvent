@@ -40,6 +40,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
     var diamondOwner: Player? = null
     var parkourBox: BoundingBox? = null
     val spawnLocations = HashMap<UUID, Location>()
+    var currentBossbar: BossBar? = null
 
     fun scheduleStart(diamondHaver: Player) {
         radius = plugin.config!!.getInt("radius")
@@ -99,7 +100,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         parkourBox = BoundingBox.of(LocationSerializer(plugin.config!!, "parkour1").toLocation().toVector(), LocationSerializer(plugin.config!!, "parkour2").toLocation().toVector())
 
         val time = AtomicInteger(plugin.config!!.getInt("arena-timer"))
-        val bossbar = BossBar.bossBar(
+        currentBossbar = BossBar.bossBar(
             Component.text("Next Phase in", NamedTextColor.YELLOW)
                 .append(Component.text(" 3 minutes", NamedTextColor.RED)),
             1.0f,
@@ -108,7 +109,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             setOf(BossBar.Flag.PLAY_BOSS_MUSIC)
         )
         for (player in Bukkit.getOnlinePlayers()) {
-            player.showBossBar(bossbar)
+            player.showBossBar(currentBossbar!!)
         }
         plugin.server.scheduler.runTaskTimer(plugin, { task ->
             if (time.decrementAndGet() == 0) {
@@ -119,9 +120,10 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
                     Component.text("Get to next zone!", NamedTextColor.YELLOW)
                 )
                 for (player in Bukkit.getOnlinePlayers()) {
-                    player.hideBossBar(bossbar)
+                    player.hideBossBar(currentBossbar!!)
                     player.showTitle(title)
                 }
+                currentBossbar = null
                 return@runTaskTimer
             }
             var timeFormat = "${time.get() / 60} minutes ${time.get() % 60} seconds"
@@ -130,9 +132,9 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             } else if (time.get() < 60) {
                 timeFormat = "${time.get()} seconds"
             }
-            bossbar.name(Component.text("Next Phase in ", NamedTextColor.YELLOW)
+            currentBossbar!!.name(Component.text("Next Phase in ", NamedTextColor.YELLOW)
                 .append(Component.text(timeFormat, NamedTextColor.RED)))
-            bossbar.progress(time.get() / 180.0f)
+            currentBossbar!!.progress(time.get() / 180.0f)
         }, 20L, 20L)
     }
 
@@ -243,6 +245,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
 
     @EventHandler
     fun handlePlayerJoin(event: PlayerJoinEvent) {
+        if (currentBossbar != null) event.player.showBossBar(currentBossbar!!)
         if (spawnLocations.containsKey(event.player.uniqueId)) return
         event.player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 0))
     }
@@ -270,8 +273,8 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         if (!event.hasBlock()) return
         if (event.clickedBlock?.type != Material.ENDER_CHEST) return
         if (event.clickedBlock?.location != chestLocation) return
-        if (!Util.isCustomDiamond(event.player.inventory.itemInMainHand)) return
         event.isCancelled = true
+        if (!Util.isCustomDiamond(event.player.inventory.itemInMainHand)) return
         event.player.inventory.remove(event.player.inventory.itemInMainHand)
         end(event.player)
     }

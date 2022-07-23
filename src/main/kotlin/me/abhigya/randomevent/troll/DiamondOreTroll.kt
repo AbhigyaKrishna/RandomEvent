@@ -20,7 +20,9 @@ import org.bukkit.entity.TNTPrimed
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import java.util.*
 import java.util.concurrent.ThreadLocalRandom
+import kotlin.collections.ArrayList
 
 class DiamondOreTroll : RandomTrollList<BlockBreakEvent>() {
 
@@ -41,7 +43,7 @@ class DiamondOreTroll : RandomTrollList<BlockBreakEvent>() {
         val id = ID++
         val spawnPacket = ClientboundAddEntityPacket(
             id,
-            null,
+            UUID.randomUUID(),
             it.block.x.toDouble(),
             it.block.y.toDouble(),
             it.block.z.toDouble(),
@@ -56,7 +58,9 @@ class DiamondOreTroll : RandomTrollList<BlockBreakEvent>() {
             SynchedEntityData(null),
             false
         )
-        ClientboundSetEntityDataPacket::class.java.getDeclaredField("packedItems").set(metaDataPacket, listOf(
+        val field = ClientboundSetEntityDataPacket::class.java.getDeclaredField("b")
+        field.isAccessible = true
+        field.set(metaDataPacket, listOf(
             SynchedEntityData.DataItem(EntityDataAccessor(8, EntityDataSerializers.ITEM_STACK), ItemStack(Items.DIAMOND))
         ))
 
