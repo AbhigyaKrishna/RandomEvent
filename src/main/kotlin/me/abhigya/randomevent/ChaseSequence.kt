@@ -17,6 +17,7 @@ import org.bukkit.entity.Player
 import org.bukkit.entity.TNTPrimed
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityExplodeEvent
@@ -269,8 +270,17 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
 
     @EventHandler
     fun handleInteract(event: PlayerInteractEvent) {
-        if (chestLocation == null) return
         if (!event.hasBlock()) return
+        if (event.action == Action.PHYSICAL) {
+            if (event.clickedBlock?.type == Material.LIGHT_WEIGHTED_PRESSURE_PLATE) {
+                val loc = LocationSerializer(plugin.config!!, "trap1").toLocation()
+                if (event.clickedBlock!!.location == loc) {
+                    event.player.velocity = event.player.location.direction.multiply(2)
+                }
+            }
+            return
+        }
+        if (chestLocation == null) return
         if (event.clickedBlock?.type != Material.ENDER_CHEST) return
         if (event.clickedBlock?.location != chestLocation) return
         event.isCancelled = true

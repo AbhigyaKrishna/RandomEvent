@@ -1,9 +1,6 @@
 package me.abhigya.randomevent
 
-import me.abhigya.randomevent.command.SetArenaCentreCommand
-import me.abhigya.randomevent.command.SetParkourCommand
-import me.abhigya.randomevent.command.SetSubmitLocationCommand
-import me.abhigya.randomevent.command.SetTntCommand
+import me.abhigya.randomevent.command.*
 import me.abhigya.randomevent.util.Util
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -55,6 +52,7 @@ class RandomEvent : JavaPlugin() {
         getCommand("setsubmit")!!.setExecutor(SetSubmitLocationCommand(this))
         getCommand("settnt")!!.setExecutor(SetTntCommand(this))
         getCommand("setparkour")!!.setExecutor(SetParkourCommand(this))
+        getCommand("settrap")!!.setExecutor(SetTrapLocation(this))
 
     }
 

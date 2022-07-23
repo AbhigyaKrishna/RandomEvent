@@ -14,6 +14,8 @@ commands:
     permission: 'randomevent.command'
   'setparkour':
     permission: 'randomevent.command'
+  'settrap':
+    permission: 'randomevent.command'
 permissions:
   'randomevent.command':
     default: 'op'
