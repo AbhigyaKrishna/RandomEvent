@@ -163,7 +163,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
 
     private fun end(winner: Player) {
         plugin.server.pluginManager.callEvent(EventWinEvent(winner))
-        val title = Title.title(MiniMessage.miniMessage().deserialize("<yellow>THEE ART THE CHAMPION!"), MiniMessage.miniMessage().deserialize("Congratulations!! Thee has proven thy self in this land of imagination. Go fourth, choose thy reward."))
+        val title = Title.title(MiniMessage.miniMessage().deserialize("<yellow>THEE ART THE CHAMPION!"), MiniMessage.miniMessage().deserialize("Congratulations!! Go fourth, choose thy reward."))
         winner.showTitle(title)
         var i = 0
         while (i <= 20) {
