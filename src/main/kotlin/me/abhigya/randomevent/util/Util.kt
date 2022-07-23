@@ -35,8 +35,8 @@ object Util {
             title = "Unknown Message..."
             addPages(
                 MiniMessage.miniMessage().deserialize(
-                    "<rainbow>Hello Adventurer!! \\n\" +\n" +
-                        "We are the GameMasters as thee might have guessed. \\n\" +\n" +
+                    "<rainbow>Hello Adventurer!!\n" +
+                        "We are the GameMasters as thee might have guessed.\n" +
                         "We welcome thee to this arena of proving where souls from around \n" +
                         "creation come prove their worth and claim the mantle of The Lord."
                 ),
