@@ -1,17 +1,21 @@
 package me.abhigya.randomevent
 
 import me.abhigya.randomevent.command.SetArenaCentreCommand
+import me.abhigya.randomevent.command.SetParkourCommand
 import me.abhigya.randomevent.command.SetSubmitLocationCommand
+import me.abhigya.randomevent.command.SetTntCommand
 import me.abhigya.randomevent.util.Util
-import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
+import org.bukkit.World
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.generator.ChunkGenerator
 import org.bukkit.inventory.FurnaceRecipe
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.RecipeChoice
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
+import java.util.*
 
 class RandomEvent : JavaPlugin() {
 
@@ -20,8 +24,6 @@ class RandomEvent : JavaPlugin() {
     }
 
     var config: YamlConfiguration? = null
-    var arenaLocation: Location? = null
-    var submitLocation: Location? = null
     val chaseSequence = ChaseSequence(this)
 
     override fun onEnable() {
@@ -51,6 +53,8 @@ class RandomEvent : JavaPlugin() {
 
         getCommand("setarena")!!.setExecutor(SetArenaCentreCommand(this))
         getCommand("setsubmit")!!.setExecutor(SetSubmitLocationCommand(this))
+        getCommand("settnt")!!.setExecutor(SetTntCommand(this))
+        getCommand("setparkour")!!.setExecutor(SetParkourCommand(this))
 
     }
 
@@ -66,9 +70,15 @@ class RandomEvent : JavaPlugin() {
         config?.save(file)
 
         config = YamlConfiguration.loadConfiguration(file)
-
-        arenaLocation = config!!.getLocation("arena-location")
-        submitLocation = config!!.getLocation("submit-location")
     }
 
+    override fun getDefaultWorldGenerator(worldName: String, id: String?): ChunkGenerator {
+        return VoidChunkGenerator()
+    }
+
+    class VoidChunkGenerator : ChunkGenerator() {
+        override fun generateChunkData(world: World, random: Random, x: Int, z: Int, biome: BiomeGrid): ChunkData {
+            return this.createChunkData(world)
+        }
+    }
 }

@@ -7,11 +7,13 @@ softdepend:
   - 'libdisguise'
 commands:
   'setarena':
-    permission: 'randomevent.setarena'
+    permission: 'randomevent.command'
   'setsubmit':
-    permission: 'randomevent.setsubmit'
+    permission: 'randomevent.command'
+  'settnt':
+    permission: 'randomevent.command'
+  'setparkour':
+    permission: 'randomevent.command'
 permissions:
-  'randomevent.setarena':
-    default: 'op'
-  'randomevent.setsubmit':
+  'randomevent.command':
     default: 'op'

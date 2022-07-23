@@ -1,28 +1,26 @@
 package me.abhigya.randomevent.troll
 
-import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.protocol.entity.data.EntityData
-import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes
-import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
-import com.github.retrooper.packetevents.protocol.item.ItemStack
-import com.github.retrooper.packetevents.protocol.item.type.ItemTypes
-import com.github.retrooper.packetevents.util.Vector3d
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity
 import net.kyori.adventure.text.minimessage.MiniMessage
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
+import net.minecraft.network.syncher.EntityDataAccessor
+import net.minecraft.network.syncher.EntityDataSerializers
+import net.minecraft.network.syncher.SynchedEntityData
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.phys.Vec3
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.block.Block
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Silverfish
 import org.bukkit.entity.TNTPrimed
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import java.util.*
 import java.util.concurrent.ThreadLocalRandom
-import kotlin.collections.ArrayList
 
 class DiamondOreTroll : RandomTrollList<BlockBreakEvent>() {
 
@@ -41,23 +39,29 @@ class DiamondOreTroll : RandomTrollList<BlockBreakEvent>() {
 
     val fakeDiamond  = Troll<BlockBreakEvent>("Fake Diamond", 20) {
         val id = ID++
-        val spawnPacket = WrapperPlayServerSpawnEntity(
+        val spawnPacket = ClientboundAddEntityPacket(
             id,
-            Optional.empty(),
-            EntityTypes.ITEM,
-            Vector3d(it.block.x.toDouble(), it.block.y.toDouble(), it.block.z.toDouble()),
+            null,
+            it.block.x.toDouble(),
+            it.block.y.toDouble(),
+            it.block.z.toDouble(),
             0.0F,
             0.0F,
-            0.0F,
+            net.minecraft.world.entity.EntityType.ITEM,
             0,
-            Optional.empty()
+            Vec3.ZERO
         )
-        val metaDataPacket = WrapperPlayServerEntityMetadata(id, mutableListOf(
-            EntityData(8, EntityDataTypes.ITEMSTACK, ItemStack.builder().type(ItemTypes.DIAMOND).amount(1).build())
+        val metaDataPacket = ClientboundSetEntityDataPacket(
+            id,
+            SynchedEntityData(null),
+            false
+        )
+        ClientboundSetEntityDataPacket::class.java.getDeclaredField("packedItems").set(metaDataPacket, listOf(
+            SynchedEntityData.DataItem(EntityDataAccessor(8, EntityDataSerializers.ITEM_STACK), ItemStack(Items.DIAMOND))
         ))
 
-        PacketEvents.getAPI().playerManager.sendPacket(it.player, spawnPacket)
-        PacketEvents.getAPI().playerManager.sendPacket(it.player, metaDataPacket)
+        (it.player as CraftPlayer).handle.connection.send(spawnPacket)
+        (it.player as CraftPlayer).handle.connection.send(metaDataPacket)
     }
 
     val tnt = Troll<BlockBreakEvent>("TNT", 10) {

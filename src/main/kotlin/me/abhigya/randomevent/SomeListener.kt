@@ -37,24 +37,12 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
     private val diamondTroll = DiamondOreTroll().finalize()
     private val cowTroll = CowTroll().finalize()
 
-    private val bamboozledPotato = ItemStack(Material.POTATO).apply {
-        itemMeta = itemMeta?.apply {
-            displayName(MiniMessage.miniMessage().deserialize("<rainbow>Bamboozled Potato"))
-            lore(
-                listOf(
-                    Component.text("What did you think, is it that easy?", NamedTextColor.AQUA, TextDecoration.ITALIC),
-                    Component.text("It's still out there somewhere, keep searching.")
-                )
-            )
-        }
-    }
-
     @EventHandler
     fun handleBlockBreak(event: BlockBreakEvent) {
         if (event.block.type == Material.DIAMOND_ORE) {
             event.isDropItems = false
 
-            diamondTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+            diamondTroll.randomValue().execute(event)
         }
     }
 
@@ -62,7 +50,7 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
     fun handlePlayerInteractWithEntity(event: PlayerInteractAtEntityEvent) {
         if (event.rightClicked is Cow) {
             event.isCancelled = true
-            cowTroll.randomValue().debugExecute(event) { "Executing ${it.name} for ${event.player.name}" }
+            cowTroll.randomValue().execute(event)
         }
     }
 
@@ -89,7 +77,7 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
                     val item = event.player.inventory.getItem(it)
                     if (item?.type == Material.DIAMOND) {
                         if (Util.isCustomDiamond(item)) return@forEach
-                        event.player.inventory.setItem(it, bamboozledPotato)
+                        event.player.inventory.setItem(it, Util.bamboozledPotato)
                     }
                 }
 
@@ -131,16 +119,26 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun handleInventorySwap(event: InventoryClickEvent) {
-        if (event.cursor == null) return
+        if (event.whoClicked !is Player) return
         if (event.view.topInventory.type != InventoryType.FURNACE) return
-        if (!Util.isCustomDiamond(event.cursor!!)) return
-        if (event.clickedInventory?.type == InventoryType.PLAYER) return
-        for (player in Bukkit.getOnlinePlayers()) {
-            player.showTitle(Title.title(Component.text("${event.whoClicked.name} got the diamond!", NamedTextColor.AQUA),
-                Component.text("Starting PvP in 10 seconds.", NamedTextColor.RED),
-                Title.Times.times(Ticks.duration(10L), Ticks.duration(50L), Ticks.duration(10L))))
+        val fn = {
+            for (player in Bukkit.getOnlinePlayers()) {
+                player.showTitle(Title.title(Component.text("${event.whoClicked.name} got the diamond!", NamedTextColor.AQUA),
+                    Component.text("Starting PvP in 10 seconds.", NamedTextColor.RED),
+                    Title.Times.times(Ticks.duration(10L), Ticks.duration(50L), Ticks.duration(10L))))
+            }
+            plugin.chaseSequence.scheduleStart(event.whoClicked as Player)
+            HandlerList.unregisterAll(this)
         }
-        plugin.chaseSequence.scheduleStart(event.whoClicked as Player)
-        HandlerList.unregisterAll(this)
+        if (event.isShiftClick) {
+            if (Util.isCustomDiamond(event.currentItem) &&
+                event.whoClicked.inventory.any { it == null || it.type == Material.AIR }) {
+                fn()
+            }
+        } else {
+            if (!Util.isCustomDiamond(event.cursor)) return
+            if (event.clickedInventory?.type != InventoryType.PLAYER) return
+            fn()
+        }
     }
 }
