@@ -19,6 +19,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityExplodeEvent
+import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryType
@@ -48,32 +49,11 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
 
     @EventHandler
     fun handlePlayerJoin(event: PlayerJoinEvent) {
-        val guideBook = ItemStack(Material.BOOK)
-        val bookMeta = guideBook.itemMeta as BookMeta
-
-        bookMeta.author = "The Game Masters"
-        bookMeta.title = "Unknown Message..."
-        bookMeta.page(1, Component.text("Hello Adventurer!! \n" +
-                "We are the GameMasters as thee might have guessed. \n" +
-                "We welcome thee to this arena of proving where souls from around creation come prove their worth and claim the mantle of The Lord. \n" +
-                "Be prepared for thee art not alone. There shall be mayhem so we advice thee, BE PREPARED \n" +
-                "Best of Luck in thy endeavours, May thee bring good tidings.\n\n\n" +
-                "Check next page for details of thy task."))
-        bookMeta.page(2, Component.text("Your main task is to THE DIAMOND\n\n" +
-                "1> Diamonds are extremely valuable resources \n" +
-                "2> Diamonds were used in various applications in the old days. Such as creating tools of War and Craft.\n" +
-                "3> Counterfeit Diamonds do exist in this world, be weary. \n" +
-                "4> Diamonds are said to be the hardest minerals in the world. \n" +
-                "5> Diamonds were used to cut glass in the old days due to their density. \n" +
-                "6> The purest form of Diamonds present in this world are BLUE in colour. \n" +
-                "7> Diamonds tend to have very high melting points, which while being hard achieve are not unachievable."))
-
-        guideBook.itemMeta = bookMeta
-
         if (event.player.hasPlayedBefore()) return
 
-        event.player.inventory.addItem(guideBook)
+        event.player.inventory.addItem(Util.hintBook)
     }
+
     @EventHandler
     fun handlePlayerInteractWithEntity(event: PlayerInteractAtEntityEvent) {
         if (event.rightClicked is Cow) {
@@ -145,32 +125,41 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
         }
     }
 
+    fun nextSequence(player: Player) {
+        for (p in Bukkit.getOnlinePlayers()) {
+            if (p == player) {
+                p.showTitle(Title.title(Component.text("Fine work you have done!!", NamedTextColor.AQUA), Component.text("Now this should go without saying.", NamedTextColor.RED)))
+            } else {
+                p.showTitle(Title.title(Component.text("Someone got the diamond!", NamedTextColor.AQUA),
+                    Component.text("Starting PvP in 10 seconds.", NamedTextColor.RED),
+                    Title.Times.times(Ticks.duration(10L), Ticks.duration(50L), Ticks.duration(10L))))
+            }
+        }
+        plugin.chaseSequence.scheduleStart()
+        HandlerList.unregisterAll(this)
+    }
+
     @EventHandler(ignoreCancelled = true)
     fun handleInventorySwap(event: InventoryClickEvent) {
         if (event.whoClicked !is Player) return
         if (event.view.topInventory.type != InventoryType.FURNACE) return
-        val fn = {
-            for (player in Bukkit.getOnlinePlayers()) {
-                if (player == event.whoClicked) {
-                    player.showTitle(Title.title(Component.text("Fine work you have done!!", NamedTextColor.AQUA), Component.text("It is in thy best interests to keep thy possession of the diamond a secret.")))
-                }else {
-                    player.showTitle(Title.title(Component.text("Someone got the diamond!", NamedTextColor.AQUA),
-                        Component.text("Starting PvP in 10 seconds.", NamedTextColor.RED),
-                        Title.Times.times(Ticks.duration(10L), Ticks.duration(50L), Ticks.duration(10L))))
-                }
-            }
-            plugin.chaseSequence.scheduleStart(event.whoClicked as Player)
-            HandlerList.unregisterAll(this)
-        }
         if (event.isShiftClick) {
             if (Util.isCustomDiamond(event.currentItem) &&
                 event.whoClicked.inventory.any { it == null || it.type == Material.AIR }) {
-                fn()
+                nextSequence(event.whoClicked as Player)
             }
         } else {
             if (!Util.isCustomDiamond(event.cursor)) return
             if (event.clickedInventory?.type != InventoryType.PLAYER) return
-            fn()
+            nextSequence(event.whoClicked as Player)
+        }
+    }
+
+    @EventHandler
+    fun handlePickup(event: EntityPickupItemEvent) {
+        if (event.entity !is Player) return
+        if (Util.isCustomDiamond(event.item.itemStack)) {
+            nextSequence(event.entity as Player)
         }
     }
 }

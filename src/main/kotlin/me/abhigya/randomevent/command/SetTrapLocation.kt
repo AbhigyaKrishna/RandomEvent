@@ -20,7 +20,7 @@ class SetTrapLocation(private val plugin: RandomEvent) : CommandExecutor {
                     sender.sendMessage("You must be standing on a pressure plate to set a trap location.")
                     return false
                 }
-                LocationSerializer(sender.location).save(plugin.config!!, "trap1")
+                LocationSerializer(block.location).save(plugin.config!!, "trap1")
                 plugin.reloadConfig0()
             }
         }

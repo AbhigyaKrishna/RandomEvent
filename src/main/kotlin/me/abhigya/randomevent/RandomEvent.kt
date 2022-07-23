@@ -47,12 +47,17 @@ class RandomEvent : JavaPlugin() {
         server.addRecipe(recipe)
 
         reloadConfig0()
+        val file = File(dataFolder, "song.txt")
+        if (!file.exists()) {
+            saveResource("song.txt", false)
+        }
 
         getCommand("setarena")!!.setExecutor(SetArenaCentreCommand(this))
         getCommand("setsubmit")!!.setExecutor(SetSubmitLocationCommand(this))
         getCommand("settnt")!!.setExecutor(SetTntCommand(this))
         getCommand("setparkour")!!.setExecutor(SetParkourCommand(this))
         getCommand("settrap")!!.setExecutor(SetTrapLocation(this))
+        getCommand("eventdebug")!!.setExecutor(DebugCommand(this))
 
     }
 

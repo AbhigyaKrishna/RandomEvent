@@ -10,6 +10,8 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.title.Title
+import net.kyori.adventure.title.Title.Times
+import net.kyori.adventure.util.Ticks
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
@@ -19,6 +21,7 @@ import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.entity.TNTPrimed
 import org.bukkit.event.EventHandler
+import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockExplodeEvent
@@ -33,8 +36,12 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.BoundingBox
+import java.io.File
+import java.nio.charset.Charset
+import java.nio.file.Files
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.io.path.Path
 
 class ChaseSequence(private val plugin: RandomEvent) : Listener {
 
@@ -46,7 +53,10 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
     val spawnLocations = HashMap<UUID, Location>()
     var currentBossbar: BossBar? = null
 
-    fun scheduleStart(diamondHaver: Player) {
+    fun scheduleStart() {
+        val listener = InvListener()
+        plugin.server.pluginManager.registerEvents(listener, plugin)
+
         radius = plugin.config!!.getInt("radius")
         val bossbar = BossBar.bossBar(
             Component.text("PvP starting in ", NamedTextColor.YELLOW)
@@ -69,7 +79,8 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
                 for (player in Bukkit.getOnlinePlayers()) {
                     player.hideBossBar(bossbar)
                 }
-                init(diamondHaver)
+                HandlerList.unregisterAll(listener)
+                init()
                 return@runTaskTimer
             }
 
@@ -84,9 +95,8 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         }, 20L, 20L)
     }
 
-    fun init(diamondHaver: Player) {
+    fun init() {
         started = true
-        diamondOwner = diamondHaver
         plugin.server.pluginManager.registerEvents(this, plugin)
         for (player in Bukkit.getOnlinePlayers()) {
             teleportInArena(player)
@@ -95,10 +105,12 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
                 val itemStack = player.inventory.getItem(i)
                 if (itemStack != null && itemStack.type == Material.DIAMOND && !Util.isCustomDiamond(itemStack)) {
                     player.inventory.setItem(i, Util.bamboozledPotato)
+                } else if (Util.isCustomDiamond(itemStack)) {
+                    diamondOwner = player
                 }
             }
         }
-        applyOwnerPotionEffects(diamondHaver)
+        applyOwnerPotionEffects(diamondOwner!!)
 
         chestLocation = LocationSerializer(plugin.config!!, "submit-location").toLocation()
         parkourBox = BoundingBox.of(LocationSerializer(plugin.config!!, "parkour1").toLocation().toVector(), LocationSerializer(plugin.config!!, "parkour2").toLocation().toVector())
@@ -142,6 +154,17 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         }, 20L, 20L)
     }
 
+    class InvListener : Listener {
+
+        @EventHandler
+        fun handlePlayerThrow(event: PlayerDropItemEvent) {
+            if (Util.isCustomDiamond(event.itemDrop.itemStack)) {
+                event.isCancelled = true
+            }
+        }
+
+    }
+
     fun spawnTnt() {
         val loc1 = LocationSerializer(plugin.config!!, "tnt1").toLocation()
         val loc2 = LocationSerializer(plugin.config!!, "tnt2").toLocation()
@@ -163,17 +186,52 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
 
     private fun end(winner: Player) {
         plugin.server.pluginManager.callEvent(EventWinEvent(winner))
-        val title = Title.title(MiniMessage.miniMessage().deserialize("<yellow>THEE ART THE CHAMPION!"), MiniMessage.miniMessage().deserialize("Congratulations!! Go fourth, choose thy reward."))
+        val title = Title.title(MiniMessage.miniMessage().deserialize("<yellow>THEE ART THE CHAMPION!"),
+            MiniMessage.miniMessage().deserialize("Congratulations!! Thee has proven thy self in this land of imagination."))
         winner.showTitle(title)
+        val allTitle = Title.title(Component.text("${winner.name} ", NamedTextColor.AQUA)
+            .append(Component.text("is the champion!", NamedTextColor.YELLOW)),
+            Component.text("Better luck next time!", NamedTextColor.GREEN)
+        )
+        for (player in Bukkit.getOnlinePlayers()) {
+            if (player != winner) {
+                player.gameMode = GameMode.SPECTATOR
+                player.showTitle(allTitle)
+            }
+        }
+
+
+
         var i = 0
         while (i <= 20) {
             winner.world.spawn(Util.randomCircleVector(3, winner.location.toVector()).toLocation(winner.world), Firework::class.java)
             i++
         }
-        for (player in Bukkit.getOnlinePlayers()) {
-            if (player != winner) {
-                player.gameMode = GameMode.SPECTATOR
-            }
+    }
+
+    fun runSong() {
+        plugin.server.scheduler.runTaskAsynchronously(plugin) { task ->
+            val lines = Files.readAllLines(Path("./plugins/RandomEvent/song.txt"))
+            val cursor = AtomicInteger(0)
+            plugin.server.scheduler.runTaskTimerAsynchronously(plugin, { task ->
+                if (cursor.get() >= lines.size || Bukkit.getOnlinePlayers().isEmpty()) {
+                    task.cancel()
+                    return@runTaskTimerAsynchronously
+                }
+                val title = Title.title(
+                    Component.text(lines[cursor.get()], NamedTextColor.YELLOW),
+                    Component.empty(),
+                    Times.times(
+                        Ticks.duration(10L),
+                        Ticks.duration(20L),
+                        Ticks.duration(10L),
+                    )
+                )
+                for (player in Bukkit.getOnlinePlayers()) {
+                    player.showTitle(title)
+                }
+                cursor.incrementAndGet()
+            }, 0L, 40L)
         }
     }
 
@@ -183,7 +241,8 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         player.addPotionEffects(listOf(
             PotionEffect(PotionEffectType.HEALTH_BOOST, Int.MAX_VALUE, 2),
             PotionEffect(PotionEffectType.INCREASE_DAMAGE, Int.MAX_VALUE, 0),
-            PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Int.MAX_VALUE, 0)
+            PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Int.MAX_VALUE, 0),
+            PotionEffect(PotionEffectType.REGENERATION, 60, 1)
         ))
     }
 

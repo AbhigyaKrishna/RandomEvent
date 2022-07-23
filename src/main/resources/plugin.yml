@@ -16,6 +16,8 @@ commands:
     permission: 'randomevent.command'
   'settrap':
     permission: 'randomevent.command'
+  'eventdebug':
+    permission: 'randomevent.command'
 permissions:
   'randomevent.command':
     default: 'op'
