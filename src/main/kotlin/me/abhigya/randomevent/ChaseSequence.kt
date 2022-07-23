@@ -8,10 +8,13 @@ import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.entity.Firework
 import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.entity.TNTPrimed
@@ -158,8 +161,20 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         }, 20)
     }
 
-    fun end(winner: Player) {
+    private fun end(winner: Player) {
         plugin.server.pluginManager.callEvent(EventWinEvent(winner))
+        val title = Title.title(MiniMessage.miniMessage().deserialize("<yellow>THEE ART THE CHAMPION!"), MiniMessage.miniMessage().deserialize("Congratulations!! Thee has proven thy self in this land of imagination. Go fourth, choose thy reward."))
+        winner.showTitle(title)
+        var i = 0
+        while (i <= 20) {
+            winner.world.spawn(Util.randomCircleVector(3, winner.location.toVector()).toLocation(winner.world), Firework::class.java)
+            i++
+        }
+        for (player in Bukkit.getOnlinePlayers()) {
+            if (player != winner) {
+                player.gameMode = GameMode.SPECTATOR
+            }
+        }
     }
 
     private fun applyOwnerPotionEffects(player: Player) {

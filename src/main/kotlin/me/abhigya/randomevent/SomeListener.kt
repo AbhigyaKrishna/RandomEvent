@@ -5,10 +5,10 @@ import me.abhigya.randomevent.troll.DiamondOreTroll
 import me.abhigya.randomevent.util.Util
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.title.Title
 import net.kyori.adventure.util.Ticks
+import net.minecraft.world.item.BookItem
+import net.minecraft.world.item.ItemStack
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Chest
@@ -26,8 +26,8 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerInteractAtEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerMoveEvent
-import org.bukkit.inventory.ItemStack
 import org.bukkit.util.BoundingBox
 
 class SomeListener(private val plugin: RandomEvent) : Listener {
@@ -46,6 +46,12 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
         }
     }
 
+    @EventHandler
+    fun handlePlayerJoin(event: PlayerJoinEvent) {
+        val guideBook = Material.WRITABLE_BOOK
+        val BookMeta =
+
+    }
     @EventHandler
     fun handlePlayerInteractWithEntity(event: PlayerInteractAtEntityEvent) {
         if (event.rightClicked is Cow) {
@@ -123,9 +129,13 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
         if (event.view.topInventory.type != InventoryType.FURNACE) return
         val fn = {
             for (player in Bukkit.getOnlinePlayers()) {
-                player.showTitle(Title.title(Component.text("${event.whoClicked.name} got the diamond!", NamedTextColor.AQUA),
-                    Component.text("Starting PvP in 10 seconds.", NamedTextColor.RED),
-                    Title.Times.times(Ticks.duration(10L), Ticks.duration(50L), Ticks.duration(10L))))
+                if (player == event.whoClicked) {
+                    player.showTitle(Title.title(Component.text("Fine work you have done!!", NamedTextColor.AQUA), Component.text("Now this should go without saying but it is in thy best interests to keep thy possession of the diamond a secret.")))
+                }else {
+                    player.showTitle(Title.title(Component.text("Someone got the diamond!", NamedTextColor.AQUA),
+                        Component.text("Starting PvP in 10 seconds.", NamedTextColor.RED),
+                        Title.Times.times(Ticks.duration(10L), Ticks.duration(50L), Ticks.duration(10L))))
+                }
             }
             plugin.chaseSequence.scheduleStart(event.whoClicked as Player)
             HandlerList.unregisterAll(this)
