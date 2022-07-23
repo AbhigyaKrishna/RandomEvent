@@ -38,7 +38,7 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
 
     @EventHandler
     fun handleBlockBreak(event: BlockBreakEvent) {
-        if (event.block.type == Material.DIAMOND_ORE) {
+        if (event.block.type == Material.DIAMOND_ORE || event.block.type == Material.DEEPSLATE_DIAMOND_ORE) {
             event.isDropItems = false
 
             diamondTroll.randomValue().execute(event)
