@@ -200,7 +200,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             }
         }
 
-
+        runSong()
 
         var i = 0
         while (i <= 20) {
@@ -210,17 +210,18 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
     }
 
     fun runSong() {
-        plugin.server.scheduler.runTaskAsynchronously(plugin) { task ->
+        plugin.server.scheduler.runTaskAsynchronously(plugin) { _ ->
             val lines = Files.readAllLines(Path("./plugins/RandomEvent/song.txt"))
             val cursor = AtomicInteger(0)
+            val sound = Sound.sound(org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, Sound.Source.MASTER, 5.0f, 1.0f)
             plugin.server.scheduler.runTaskTimerAsynchronously(plugin, { task ->
                 if (cursor.get() >= lines.size || Bukkit.getOnlinePlayers().isEmpty()) {
                     task.cancel()
                     return@runTaskTimerAsynchronously
                 }
                 val title = Title.title(
+                    Component.text(if (cursor.get() % 2 == 0) "( ͡° ͜ʖ ͡°)╭∩╮" else "( ͡° ͜ʖ ͡°)", NamedTextColor.GREEN),
                     Component.text(lines[cursor.get()], NamedTextColor.YELLOW),
-                    Component.empty(),
                     Times.times(
                         Ticks.duration(10L),
                         Ticks.duration(20L),
@@ -229,6 +230,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
                 )
                 for (player in Bukkit.getOnlinePlayers()) {
                     player.showTitle(title)
+                    player.playSound(sound)
                 }
                 cursor.incrementAndGet()
             }, 0L, 40L)
