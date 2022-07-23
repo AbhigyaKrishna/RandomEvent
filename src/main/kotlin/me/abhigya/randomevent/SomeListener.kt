@@ -28,8 +28,6 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.util.BoundingBox
-import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.BookMeta
 
 class SomeListener(private val plugin: RandomEvent) : Listener {
 
