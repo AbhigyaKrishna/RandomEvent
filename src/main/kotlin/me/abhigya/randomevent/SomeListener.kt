@@ -63,10 +63,10 @@ class SomeListener(private val plugin: RandomEvent) : Listener {
     @EventHandler
     fun handleChestOpen(event: PlayerInteractEvent) {
         if (!event.hasBlock()) return
-        if (event.clickedBlock?.type == Material.CHEST) {
+        if (event.clickedBlock?.type == Material.CHEST || event.clickedBlock?.type == Material.TRAPPED_CHEST || event.clickedBlock?.type == Material.CHEST_MINECART) {
             if ((event.clickedBlock!!.state as Chest).blockInventory.contains(Material.DIAMOND)) {
-                val loc1 = event.clickedBlock!!.location.add(10.0, 10.0, 10.0)
-                val loc2 = event.clickedBlock!!.location.subtract(10.0, 10.0, 10.0)
+                val loc1 = event.clickedBlock!!.location.add(5.0, 5.0, 5.0)
+                val loc2 = event.clickedBlock!!.location.subtract(5.0, 5.0, 5.0)
                 val box = BoundingBox(loc1.x, loc1.y, loc1.z, loc2.x, loc2.y, loc2.z)
 
                 chests[event.player] = box
