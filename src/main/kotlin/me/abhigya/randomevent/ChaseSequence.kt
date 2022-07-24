@@ -13,10 +13,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.title.Title
 import net.kyori.adventure.title.Title.Times
 import net.kyori.adventure.util.Ticks
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
-import org.bukkit.Location
-import org.bukkit.Material
+import org.bukkit.*
 import org.bukkit.entity.Firework
 import org.bukkit.entity.Item
 import org.bukkit.entity.Player
@@ -32,6 +29,7 @@ import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.*
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.FireworkMeta
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.BoundingBox
@@ -201,6 +199,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         for (player in Bukkit.getOnlinePlayers()) {
             if (player != winner) {
                 player.gameMode = GameMode.SPECTATOR
+                player.teleport(winner.location)
                 player.showTitle(allTitle)
             }
         }
@@ -209,12 +208,16 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             runSong()
         }, 100)
 
-        var i = 0
-        while (i <= 20) {
-            winner.world.spawn(Util.randomCircleVector(3, winner.location.toVector()).toLocation(winner.world), Firework::class.java).apply {
-                ticksToDetonate = 40
-            }
-            i++
+        repeat(20) {
+            Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                val fireCrackerENT = winner.world.spawn(Util.randomCircleVector(3, winner.location.toVector()).toLocation(winner.world), Firework::class.java).apply {
+                    ticksToDetonate = 40
+                }
+                var fireCrackerMetaZ = fireCrackerENT.fireworkMeta
+                fireCrackerMetaZ.addEffect(FireworkEffect.builder().withColor(Color.GREEN).withColor(Color.RED).withColor(Color.YELLOW).build())
+                fireCrackerMetaZ.power = 1
+                fireCrackerENT.fireworkMeta = fireCrackerMetaZ
+            }, 20)
         }
     }
 
