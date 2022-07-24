@@ -33,7 +33,6 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.*
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import org.bukkit.scheduler.BukkitTask
 import org.bukkit.util.BoundingBox
 import java.nio.file.Files
 import java.util.*
@@ -44,6 +43,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
 
     var radius = 0
     var started = false
+    var ended = false
     var chestLocation: Location? = null
     var diamondOwner: Player? = null
     var parkourBox: BoundingBox? = null
@@ -184,6 +184,8 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
     }
 
     private fun end(winner: Player) {
+        if (ended) return
+        ended = true
         plugin.server.pluginManager.callEvent(EventWinEvent(winner))
         HandlerList.unregisterAll(this)
         removeOwnerPotionEffects(winner)
