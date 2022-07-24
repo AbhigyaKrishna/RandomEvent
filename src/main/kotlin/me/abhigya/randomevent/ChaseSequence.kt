@@ -2,6 +2,7 @@ package me.abhigya.randomevent
 
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent
 import me.abhigya.randomevent.event.EventWinEvent
+import me.abhigya.randomevent.util.DiamondLocatorTask
 import me.abhigya.randomevent.util.LocationSerializer
 import me.abhigya.randomevent.util.Util
 import net.kyori.adventure.bossbar.BossBar
@@ -28,18 +29,14 @@ import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.entity.EntityPickupItemEvent
-import org.bukkit.event.player.PlayerDropItemEvent
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerMoveEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.player.*
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import org.bukkit.scheduler.BukkitTask
 import org.bukkit.util.BoundingBox
-import java.io.File
-import java.nio.charset.Charset
 import java.nio.file.Files
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.Path
 
@@ -52,6 +49,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
     var parkourBox: BoundingBox? = null
     val spawnLocations = HashMap<UUID, Location>()
     var currentBossbar: BossBar? = null
+    var currentActionBar: DiamondLocatorTask? = null
 
     fun scheduleStart() {
         val listener = InvListener()
@@ -115,10 +113,11 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         chestLocation = LocationSerializer(plugin.config!!, "submit-location").toLocation()
         parkourBox = BoundingBox.of(LocationSerializer(plugin.config!!, "parkour1").toLocation().toVector(), LocationSerializer(plugin.config!!, "parkour2").toLocation().toVector())
 
-        val time = AtomicInteger(plugin.config!!.getInt("arena-timer"))
+        val totalTime = plugin.config!!.getInt("arena-timer")
+        val time = AtomicInteger(totalTime)
         currentBossbar = BossBar.bossBar(
             Component.text("Next Phase in", NamedTextColor.YELLOW)
-                .append(Component.text(" 3 minutes", NamedTextColor.RED)),
+                .append(Component.text("${time.get() / 60} minutes", NamedTextColor.RED)),
             1.0f,
             BossBar.Color.PURPLE,
             BossBar.Overlay.NOTCHED_10,
@@ -150,7 +149,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             }
             currentBossbar!!.name(Component.text("Next Phase in ", NamedTextColor.YELLOW)
                 .append(Component.text(timeFormat, NamedTextColor.RED)))
-            currentBossbar!!.progress(time.get() / 180.0f)
+            currentBossbar!!.progress(time.get() / totalTime.toFloat())
         }, 20L, 20L)
     }
 
@@ -186,6 +185,8 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
 
     private fun end(winner: Player) {
         plugin.server.pluginManager.callEvent(EventWinEvent(winner))
+        HandlerList.unregisterAll(this)
+        removeOwnerPotionEffects(winner)
         val title = Title.title(MiniMessage.miniMessage().deserialize("<yellow>THEE ART THE CHAMPION!"),
             MiniMessage.miniMessage().deserialize("Congratulations!! Thee has proven thy self in this land of imagination."))
         winner.showTitle(title)
@@ -200,17 +201,21 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             }
         }
 
-        runSong()
+        plugin.server.scheduler.runTaskLaterAsynchronously(plugin, { _ ->
+            runSong()
+        }, 100)
 
         var i = 0
         while (i <= 20) {
-            winner.world.spawn(Util.randomCircleVector(3, winner.location.toVector()).toLocation(winner.world), Firework::class.java)
+            winner.world.spawn(Util.randomCircleVector(3, winner.location.toVector()).toLocation(winner.world), Firework::class.java).apply {
+                ticksToDetonate = 40
+            }
             i++
         }
     }
 
     fun runSong() {
-        plugin.server.scheduler.runTaskAsynchronously(plugin) { _ ->
+        val fn = {
             val lines = Files.readAllLines(Path("./plugins/RandomEvent/song.txt"))
             val cursor = AtomicInteger(0)
             val sound = Sound.sound(org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, Sound.Source.MASTER, 5.0f, 1.0f)
@@ -235,6 +240,12 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
                 cursor.incrementAndGet()
             }, 0L, 40L)
         }
+
+        if (Bukkit.isPrimaryThread()) {
+            plugin.server.scheduler.runTaskAsynchronously(plugin, fn)
+        } else {
+            fn()
+        }
     }
 
     private fun applyOwnerPotionEffects(player: Player) {
@@ -244,7 +255,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             PotionEffect(PotionEffectType.HEALTH_BOOST, Int.MAX_VALUE, 2),
             PotionEffect(PotionEffectType.INCREASE_DAMAGE, Int.MAX_VALUE, 0),
             PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Int.MAX_VALUE, 0),
-            PotionEffect(PotionEffectType.REGENERATION, 60, 1)
+            PotionEffect(PotionEffectType.REGENERATION, 200, 1)
         ))
     }
 
@@ -264,6 +275,11 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             }
         } while (loc.y > maxY)
         player.teleport(loc)
+    }
+
+    private fun sendDiamondLocation(item: Item) {
+        currentActionBar = DiamondLocatorTask(item)
+        currentActionBar!!.runTaskTimer(plugin, 0L, 20L)
     }
 
     @EventHandler
@@ -289,12 +305,30 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
     }
 
     @EventHandler
+    fun handleDeath(event: PlayerDeathEvent) {
+        if (event.player == diamondOwner) {
+            for (drop in event.drops) {
+                if (Util.isCustomDiamond(drop)) {
+                    event.drops.remove(drop)
+                    val item = event.player.world.dropItemNaturally(event.player.location, drop)
+                    sendDiamondLocation(item)
+                    break
+                }
+            }
+        }
+    }
+
+    @EventHandler
     fun handlePickup(event: EntityPickupItemEvent) {
         if (event.entity !is Player) return
         if (Util.isCustomDiamond(event.item.itemStack)) {
             diamondOwner = event.entity as Player
             if (spawnLocations.containsKey(diamondOwner!!.uniqueId)) return
             applyOwnerPotionEffects(diamondOwner!!)
+            if (currentActionBar != null) {
+                currentActionBar!!.cancel()
+                currentActionBar = null
+            }
         }
     }
 
@@ -305,6 +339,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             removeOwnerPotionEffects(event.player)
             if (spawnLocations.containsKey(event.player.uniqueId)) return
             event.player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 0))
+            sendDiamondLocation(event.itemDrop)
         }
     }
 
@@ -314,7 +349,8 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         for (itemStack in event.player.inventory) {
             if (!Util.isCustomDiamond(itemStack)) continue
             event.player.inventory.remove(itemStack)
-            event.player.location.world.dropItem(event.player.location, itemStack)
+            val dropItem = event.player.location.world.dropItemNaturally(event.player.location, itemStack)
+            sendDiamondLocation(dropItem)
             break
         }
         removeOwnerPotionEffects(event.player)
