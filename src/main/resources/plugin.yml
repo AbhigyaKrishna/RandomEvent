@@ -18,6 +18,8 @@ commands:
     permission: 'randomevent.command'
   'eventdebug':
     permission: 'randomevent.command'
+  'eventbcast':
+    permission: 'randomevent.command'
 permissions:
   'randomevent.command':
     default: 'op'

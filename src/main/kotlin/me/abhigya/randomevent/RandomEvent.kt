@@ -58,6 +58,7 @@ class RandomEvent : JavaPlugin() {
         getCommand("setparkour")!!.setExecutor(SetParkourCommand(this))
         getCommand("settrap")!!.setExecutor(SetTrapLocation(this))
         getCommand("eventdebug")!!.setExecutor(DebugCommand(this))
+        getCommand("eventbcast")!!.setExecutor(BroadcastMessage(this))
 
     }
 

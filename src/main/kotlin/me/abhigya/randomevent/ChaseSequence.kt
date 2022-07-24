@@ -31,6 +31,7 @@ import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.*
+import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.BoundingBox
@@ -107,6 +108,8 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
                     diamondOwner = player
                 }
             }
+            player.inventory.addItem(ItemStack(Material.COOKED_BEEF, 16))
+            player.inventory.addItem(ItemStack(Material.STONE_SWORD, 1))
         }
         applyOwnerPotionEffects(diamondOwner!!)
 
@@ -188,7 +191,6 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
         ended = true
         plugin.server.pluginManager.callEvent(EventWinEvent(winner))
         HandlerList.unregisterAll(this)
-        removeOwnerPotionEffects(winner)
         val title = Title.title(MiniMessage.miniMessage().deserialize("<yellow>THEE ART THE CHAMPION!"),
             MiniMessage.miniMessage().deserialize("Congratulations!! Thee has proven thy self in this land of imagination."))
         winner.showTitle(title)
@@ -269,15 +271,15 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
 
     private fun teleportInArena(player: Player) {
         val arenaLocation = LocationSerializer(plugin.config!!, "arena-location").toLocation()
-        val maxY = plugin.config!!.getInt("max-arena-y", 300)
-        var loc: Location
-        do {
-            loc = Util.randomCircleVector(radius, arenaLocation.toVector()).toLocation(arenaLocation.world).apply {
-                y = arenaLocation.world.getHighestBlockAt(x.toInt(), z.toInt()).y + 1.0
-            }
-            println(loc.y)
-        } while (loc.y > maxY)
-        player.teleport(loc)
+//        val maxY = plugin.config!!.getInt("max-arena-y", 300)
+//        var loc: Location
+//        do {
+//            loc = Util.randomCircleVector(radius, arenaLocation.toVector()).toLocation(arenaLocation.world).apply {
+//                y = arenaLocation.world.getHighestBlockAt(x.toInt(), z.toInt()).y + 1.0
+//            }
+//            println(loc.y)
+//        } while (loc.y > maxY)
+        player.teleport(arenaLocation)
     }
 
     private fun sendDiamondLocation(item: Item) {
