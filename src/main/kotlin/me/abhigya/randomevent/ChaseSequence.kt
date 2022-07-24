@@ -275,6 +275,7 @@ class ChaseSequence(private val plugin: RandomEvent) : Listener {
             loc = Util.randomCircleVector(radius, arenaLocation.toVector()).toLocation(arenaLocation.world).apply {
                 y = arenaLocation.world.getHighestBlockAt(x.toInt(), z.toInt()).y + 1.0
             }
+            println(loc.y)
         } while (loc.y > maxY)
         player.teleport(loc)
     }
